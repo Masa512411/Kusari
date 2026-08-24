@@ -1,17 +1,32 @@
-# kusari
+# kusari（くさり）— 習慣ストリーク管理アプリ
 
-A new Flutter project.
+**コンセプト**: 習慣ごとに「今日やったか」だけを Yes/No で記録し、連続達成（ストリーク）の実感を最大化する軽量ルーティン管理アプリ。
+
+**名前の由来**: 「くさり（鎖）」＝ストリーク（途切れず繋がる連鎖）の比喩。
+
+## 技術スタック
+
+- Flutter / Dart
+- 状態管理: Riverpod
+- 永続化: Drift
+- テスト: `flutter_test`（ユニットテスト＋ウィジェットテスト）
+
+## 画面構成
+
+- **ホーム画面**: 今日の習慣一覧。タップで完了/未完了トグル。各行に現在ストリーク。
+- **習慣詳細画面**: 現在ストリーク（大きい数字）、過去最長、累計達成数、直近7〜14日のドット列、週/月の集計。
+- **習慣追加/編集**: 名前の登録、アーカイブ操作。
+
+## 開発方針
+
+TDD（テスト駆動開発）で進める。Red-Green-Refactor のサイクルを小さく回す。ストリークや集計値は DB に保存せず、達成記録から都度計算する（導出する）設計にすることで、計算ロジックを外部依存のない純粋関数に保ち、テストしやすくする。
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter test
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Flutter の詳細については[公式ドキュメント](https://docs.flutter.dev/)を参照してください。
