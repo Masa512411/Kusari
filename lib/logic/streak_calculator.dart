@@ -1,8 +1,9 @@
+Set<DateTime> _toDateSet(List<DateTime> dates) =>
+    dates.map((d) => DateTime(d.year, d.month, d.day)).toSet();
+
 int currentStreak(List<DateTime> completionDates, DateTime today) {
   final todayDate = DateTime(today.year, today.month, today.day);
-
-  final dates = completionDates
-      .map((d) => DateTime(d.year, d.month, d.day))
+  final dates = _toDateSet(completionDates)
       .where((d) => !d.isAfter(todayDate))
       .toSet();
 
@@ -29,9 +30,7 @@ int currentStreak(List<DateTime> completionDates, DateTime today) {
 }
 
 int longestStreak(List<DateTime> completionDates) {
-  final dates = completionDates
-      .map((d) => DateTime(d.year, d.month, d.day))
-      .toSet();
+  final dates = _toDateSet(completionDates);
 
   if (dates.isEmpty) {
     return 0;
@@ -55,3 +54,6 @@ int longestStreak(List<DateTime> completionDates) {
 
   return currentStreak > longest ? currentStreak : longest;
 }
+
+int totalCompletions(List<DateTime> completionDates) =>
+    _toDateSet(completionDates).length;
