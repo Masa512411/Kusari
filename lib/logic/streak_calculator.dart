@@ -27,3 +27,31 @@ int currentStreak(List<DateTime> completionDates, DateTime today) {
   }
   return count;
 }
+
+int longestStreak(List<DateTime> completionDates) {
+  final dates = completionDates
+      .map((d) => DateTime(d.year, d.month, d.day))
+      .toSet();
+
+  if (dates.isEmpty) {
+    return 0;
+  }
+
+  final sortedDates = dates.toList()..sort();
+  var longest = 1;
+  var currentStreak = 1;
+
+  for (var i = 1; i < sortedDates.length; i++) {
+    final previousDate = sortedDates[i - 1];
+    final currentDate = sortedDates[i];
+
+    if (currentDate.difference(previousDate).inDays == 1) {
+      currentStreak++;
+    } else {
+      longest = currentStreak > longest ? currentStreak : longest;
+      currentStreak = 1;
+    }
+  }
+
+  return currentStreak > longest ? currentStreak : longest;
+}
