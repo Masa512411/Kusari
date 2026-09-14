@@ -1,59 +1,38 @@
-Set<DateTime> _toDateSet(List<DateTime> dates) =>
-    dates.map((d) => DateTime(d.year, d.month, d.day)).toSet();
+import 'package:kusari/models/date.dart';
 
-int currentStreak(List<DateTime> completionDates, DateTime today) {
-  final todayDate = DateTime(today.year, today.month, today.day);
-  final dates = _toDateSet(completionDates)
-      .where((d) => !d.isAfter(todayDate))
-      .toSet();
+int currentStreak(Set<Date> completions, Date today) {
+  final valid = completions.where((d) => d <= today).toSet();
+  var cursor = valid.contains(today) ? today : today.previous;
 
-  // 猶予ルール: 今日が未達成でも昨日が達成なら昨日を起点にする
-  final DateTime cursor;
-  if (dates.contains(todayDate)) {
-    cursor = todayDate;
-  } else {
-    final yesterday = todayDate.subtract(const Duration(days: 1));
-    if (dates.contains(yesterday)) {
-      cursor = yesterday;
-    } else {
-      return 0;
-    }
-  }
-
-  var current = cursor;
   var count = 0;
-  while (dates.contains(current)) {
+  while (valid.contains(cursor)) {
     count++;
-    current = current.subtract(const Duration(days: 1));
+    cursor = cursor.previous;
   }
   return count;
 }
 
-int longestStreak(List<DateTime> completionDates) {
-  final dates = _toDateSet(completionDates);
+int longestStreak(Set<Date> completions, Date today) {
+  final valid = completions.where((d) => d <= today).toList()..sort();
 
-  if (dates.isEmpty) {
+  if (valid.isEmpty) {
     return 0;
   }
 
-  final sortedDates = dates.toList()..sort();
   var longest = 1;
-  var currentStreak = 1;
+  var run = 1;
 
-  for (var i = 1; i < sortedDates.length; i++) {
-    final previousDate = sortedDates[i - 1];
-    final currentDate = sortedDates[i];
-
-    if (currentDate.difference(previousDate).inDays == 1) {
-      currentStreak++;
+  for (var i = 1; i < valid.length; i++) {
+    if (valid[i].epochDay - valid[i - 1].epochDay == 1) {
+      run++;
     } else {
-      longest = currentStreak > longest ? currentStreak : longest;
-      currentStreak = 1;
+      longest = run > longest ? run : longest;
+      run = 1;
     }
   }
 
-  return currentStreak > longest ? currentStreak : longest;
+  return run > longest ? run : longest;
 }
 
-int totalCompletions(List<DateTime> completionDates) =>
-    _toDateSet(completionDates).length;
+int totalCompletions(Set<Date> completions, Date today) =>
+    completions.where((d) => d <= today).length;
