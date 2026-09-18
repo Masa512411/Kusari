@@ -72,5 +72,25 @@ void main() {
         Date.fromLocal(DateTime(2024, 1, 3)),
       ]);
     });
+
+    test('toDateTime は年月日が一致するUTCのDateTimeを返す', () {
+      final date = Date.fromLocal(DateTime(2024, 1, 10));
+      expect(date.toDateTime(), DateTime.utc(2024, 1, 10));
+    });
+
+    test('startOfWeek: 月曜日は自分自身を返す', () {
+      final monday = Date.fromLocal(DateTime(2024, 1, 8));
+      expect(monday.startOfWeek, monday);
+    });
+
+    test('startOfWeek: 日曜日は6日前の月曜日を返す', () {
+      final sunday = Date.fromLocal(DateTime(2024, 1, 14));
+      expect(sunday.startOfWeek, Date.fromLocal(DateTime(2024, 1, 8)));
+    });
+
+    test('startOfWeek: 月をまたいでも正しく計算する', () {
+      final date = Date.fromLocal(DateTime(2024, 2, 1)); // 木曜日
+      expect(date.startOfWeek, Date.fromLocal(DateTime(2024, 1, 29))); // 月曜日
+    });
   });
 }

@@ -13,6 +13,12 @@ class Date implements Comparable<Date> {
   Date get previous => Date(epochDay - 1);
   Date get next => Date(epochDay + 1);
 
+  DateTime toDateTime() =>
+      DateTime.utc(1970, 1, 1).add(Duration(days: epochDay));
+
+  // 月曜始まりの週の開始日（DateTime.weekday: 1=月曜〜7=日曜）
+  Date get startOfWeek => Date(epochDay - (toDateTime().weekday - 1));
+
   bool operator <=(Date other) => epochDay <= other.epochDay;
 
   @override
