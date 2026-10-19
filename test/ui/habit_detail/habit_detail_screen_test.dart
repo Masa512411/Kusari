@@ -100,4 +100,18 @@ void main() {
 
     expect(find.text('習慣を編集'), findsOneWidget);
   });
+
+  testWidgets('詳細画面からアーカイブして保存してもエラーにならない', (tester) async {
+    await tester.pumpWidget(buildApp(habitId));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.edit));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('エラー'), findsNothing);
+  });
 }
