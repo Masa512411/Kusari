@@ -41,10 +41,13 @@ class HabitRepository {
         );
   }
 
-  Future<List<Habit>> getHabits() async {
-    final rows = await (_db.select(
-      _db.habits,
-    )..orderBy([(h) => OrderingTerm.asc(h.sortOrder)])).get();
+  Future<List<Habit>> getHabits({bool includeArchived = false}) async {
+    final query = _db.select(_db.habits)
+      ..orderBy([(h) => OrderingTerm.asc(h.sortOrder)]);
+    if (!includeArchived) {
+      query.where((h) => h.archived.equals(false));
+    }
+    final rows = await query.get();
     return rows.map(_toDomain).toList();
   }
 
@@ -70,7 +73,9 @@ class HabitRepository {
   }
 
   Future<DeletedHabit> deleteHabit(String habitId) async {
-    final habit = (await getHabits()).firstWhere((h) => h.id == habitId);
+    final habit = (await getHabits(
+      includeArchived: true,
+    )).firstWhere((h) => h.id == habitId);
     final completions = await getCompletions(habitId);
 
     await (_db.delete(_db.habits)..where((h) => h.id.equals(habitId))).go();

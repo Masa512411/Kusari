@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kusari/logic/habit_name_validator.dart';
 import 'package:kusari/models/habit.dart';
+import 'package:kusari/providers/archived_habits_provider.dart';
 import 'package:kusari/providers/habit_detail_provider.dart';
 import 'package:kusari/providers/habit_repository_provider.dart';
 import 'package:kusari/providers/habit_summaries_provider.dart';
+import 'package:kusari/providers/habit_weekly_rates_provider.dart';
 
 class HabitEditScreen extends ConsumerStatefulWidget {
   final Habit? initialHabit;
@@ -54,6 +56,8 @@ class _HabitEditScreenState extends ConsumerState<HabitEditScreen> {
       await repository.addHabit(name);
     }
     ref.invalidate(habitSummariesProvider);
+    ref.invalidate(habitWeeklyRatesProvider);
+    ref.invalidate(archivedHabitsProvider);
 
     if (mounted) {
       Navigator.of(context).pop();
@@ -88,6 +92,8 @@ class _HabitEditScreenState extends ConsumerState<HabitEditScreen> {
 
     final deleted = await repository.deleteHabit(habit.id);
     ref.invalidate(habitSummariesProvider);
+    ref.invalidate(habitWeeklyRatesProvider);
+    ref.invalidate(archivedHabitsProvider);
 
     if (!mounted) return;
     final navigator = Navigator.of(context);
@@ -101,6 +107,8 @@ class _HabitEditScreenState extends ConsumerState<HabitEditScreen> {
           onPressed: () async {
             await repository.undoDelete(deleted);
             ref.invalidate(habitSummariesProvider);
+            ref.invalidate(habitWeeklyRatesProvider);
+            ref.invalidate(archivedHabitsProvider);
           },
         ),
       ),

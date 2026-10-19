@@ -51,4 +51,19 @@ void main() {
     expect(find.text('筋トレ'), findsOneWidget);
     expect(find.text('14%'), findsOneWidget);
   });
+
+  testWidgets('アーカイブ済みの習慣は集計に表示されない', (tester) async {
+    await repository.addHabit('筋トレ');
+    await repository.addHabit('休止中');
+    final archivedId = (await repository.getHabits())
+        .firstWhere((h) => h.name == '休止中')
+        .id;
+    await repository.setArchived(archivedId, true);
+
+    await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('筋トレ'), findsOneWidget);
+    expect(find.text('休止中'), findsNothing);
+  });
 }

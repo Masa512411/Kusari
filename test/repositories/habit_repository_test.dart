@@ -221,7 +221,7 @@ void main() {
     test('setArchived で archived が true になる', () async {
       await repository.setArchived(habitId, true);
 
-      final habits = await repository.getHabits();
+      final habits = await repository.getHabits(includeArchived: true);
       expect(habits.single.archived, isTrue);
     });
 
@@ -229,8 +229,57 @@ void main() {
       await repository.setArchived(habitId, true);
       await repository.setArchived(habitId, false);
 
-      final habits = await repository.getHabits();
+      final habits = await repository.getHabits(includeArchived: true);
       expect(habits.single.archived, isFalse);
+    });
+  });
+
+  group('HabitRepository アーカイブ', () {
+    late d.AppDatabase db;
+    late HabitRepository repository;
+
+    setUp(() {
+      db = d.AppDatabase(NativeDatabase.memory());
+      repository = HabitRepository(db);
+    });
+
+    tearDown(() => db.close());
+
+    test('getHabits はデフォルトでアーカイブ済みを除外する', () async {
+      await repository.addHabit('アクティブ');
+      await repository.addHabit('アーカイブ対象');
+      final archivedId = (await repository.getHabits())
+          .firstWhere((h) => h.name == 'アーカイブ対象')
+          .id;
+      await repository.setArchived(archivedId, true);
+
+      final habits = await repository.getHabits();
+
+      expect(habits.map((h) => h.name).toList(), ['アクティブ']);
+    });
+
+    test('includeArchived: true を指定するとアーカイブ済みも含めて返る', () async {
+      await repository.addHabit('アクティブ');
+      await repository.addHabit('アーカイブ対象');
+      final archivedId = (await repository.getHabits())
+          .firstWhere((h) => h.name == 'アーカイブ対象')
+          .id;
+      await repository.setArchived(archivedId, true);
+
+      final habits = await repository.getHabits(includeArchived: true);
+
+      expect(habits.map((h) => h.name).toList(), ['アクティブ', 'アーカイブ対象']);
+    });
+
+    test('アーカイブ済みの習慣も削除できる', () async {
+      await repository.addHabit('アーカイブ対象');
+      final habitId = (await repository.getHabits()).single.id;
+      await repository.setArchived(habitId, true);
+
+      await repository.deleteHabit(habitId);
+
+      final habits = await repository.getHabits(includeArchived: true);
+      expect(habits, isEmpty);
     });
   });
 }

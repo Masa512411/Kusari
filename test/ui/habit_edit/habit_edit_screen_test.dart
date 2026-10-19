@@ -89,7 +89,7 @@ void main() {
     await tester.tap(find.text('保存'));
     await tester.pumpAndSettle();
 
-    final habits = await repository.getHabits();
+    final habits = await repository.getHabits(includeArchived: true);
     expect(habits.single.archived, isTrue);
   });
 
