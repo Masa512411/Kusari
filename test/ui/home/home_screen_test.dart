@@ -169,4 +169,58 @@ void main() {
 
     expect(find.text('アーカイブ済み'), findsOneWidget);
   });
+
+  testWidgets('詳細画面からアーカイブして保存するとホームまで戻る', (tester) async {
+    await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '筋トレ');
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('筋トレ'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.edit));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.text('習慣がまだありません'), findsOneWidget);
+  });
+
+  testWidgets('アーカイブ一覧から編集して保存するとアーカイブ一覧に戻る（ホームに飛ばない）', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '休止中の習慣');
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('休止中の習慣'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.edit));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.archive_outlined));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('休止中の習慣'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('アーカイブ済み'), findsOneWidget);
+  });
 }
