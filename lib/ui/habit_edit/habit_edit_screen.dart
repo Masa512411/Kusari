@@ -46,6 +46,8 @@ class _HabitEditScreenState extends ConsumerState<HabitEditScreen> {
 
     final repository = ref.read(habitRepositoryProvider);
     final name = _controller.text.trim();
+    final wasArchived = widget.initialHabit?.archived ?? false;
+    final newlyArchived = _isEditing && !wasArchived && _archived;
 
     if (_isEditing) {
       final habitId = widget.initialHabit!.id;
@@ -60,7 +62,11 @@ class _HabitEditScreenState extends ConsumerState<HabitEditScreen> {
     ref.invalidate(archivedHabitsProvider);
 
     if (mounted) {
-      Navigator.of(context).pop();
+      if (newlyArchived) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
+        Navigator.of(context).pop();
+      }
     }
   }
 

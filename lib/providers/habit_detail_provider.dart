@@ -34,7 +34,7 @@ final habitDetailProvider = FutureProvider.family<HabitDetail, String>((
   habitId,
 ) async {
   final repository = ref.watch(habitRepositoryProvider);
-  final habits = await repository.getHabits();
+  final habits = await repository.getHabits(includeArchived: true);
   final habit = habits.firstWhere((h) => h.id == habitId);
   final completions = await repository.getCompletions(habitId);
   final today = Date.today();
