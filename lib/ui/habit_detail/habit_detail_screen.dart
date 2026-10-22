@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kusari/logic/edit_window.dart';
+import 'package:kusari/logic/milestone.dart';
+import 'package:kusari/logic/streak_calculator.dart';
 import 'package:kusari/models/date.dart';
 import 'package:kusari/providers/habit_detail_provider.dart';
 import 'package:kusari/providers/habit_repository_provider.dart';
@@ -54,11 +56,22 @@ class _HabitDetailBody extends ConsumerWidget {
     final today = Date.today();
 
     Future<void> toggle(Date date) async {
-      await ref
-          .read(habitRepositoryProvider)
-          .toggleCompletion(habitId, date, today);
+      final repository = ref.read(habitRepositoryProvider);
+      final beforeStreak = currentStreak(detail.completions, today);
+
+      await repository.toggleCompletion(habitId, date, today);
       ref.invalidate(habitDetailProvider(habitId));
       ref.invalidate(habitSummariesProvider);
+
+      final afterCompletions = await repository.getCompletions(habitId);
+      final afterStreak = currentStreak(afterCompletions, today);
+      final milestone = reachedMilestone(beforeStreak, afterStreak);
+
+      if (milestone != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('🔥 $milestone日連続達成！')),
+        );
+      }
     }
 
     return SingleChildScrollView(

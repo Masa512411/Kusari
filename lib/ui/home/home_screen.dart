@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kusari/logic/milestone.dart';
+import 'package:kusari/logic/streak_calculator.dart';
 import 'package:kusari/models/date.dart';
 import 'package:kusari/providers/habit_repository_provider.dart';
 import 'package:kusari/providers/habit_summaries_provider.dart';
@@ -47,7 +49,7 @@ class HomeScreen extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: HabitChainCard(
                     summary: summary,
-                    onToggle: () => _toggleToday(ref, summary.habit.id),
+                    onToggle: () => _toggleToday(context, ref, summary),
                     onOpenDetail: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) =>
@@ -72,12 +74,29 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _toggleToday(WidgetRef ref, String habitId) async {
+  Future<void> _toggleToday(
+    BuildContext context,
+    WidgetRef ref,
+    HabitSummary summary,
+  ) async {
+    final repository = ref.read(habitRepositoryProvider);
     final today = Date.today();
-    await ref
-        .read(habitRepositoryProvider)
-        .toggleCompletion(habitId, today, today);
+    final beforeStreak = currentStreak(summary.completions, today);
+
+    await repository.toggleCompletion(summary.habit.id, today, today);
     ref.invalidate(habitSummariesProvider);
+
+    final afterCompletions = await repository.getCompletions(
+      summary.habit.id,
+    );
+    final afterStreak = currentStreak(afterCompletions, today);
+    final milestone = reachedMilestone(beforeStreak, afterStreak);
+
+    if (milestone != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('🔥 $milestone日連続達成！')),
+      );
+    }
   }
 
   Future<void> _reorder(

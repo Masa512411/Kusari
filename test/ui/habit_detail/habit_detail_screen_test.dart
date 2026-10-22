@@ -114,4 +114,33 @@ void main() {
 
     expect(find.textContaining('エラー'), findsNothing);
   });
+
+  testWidgets('ドットのタップで7日連続達成した瞬間にマイルストーンメッセージが表示される', (
+    tester,
+  ) async {
+    for (var i = 6; i >= 1; i--) {
+      final day = Date(today.epochDay - i);
+      await repository.toggleCompletion(habitId, day, day.next);
+    }
+
+    await tester.pumpWidget(buildApp(habitId));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(ValueKey('dot-${today.epochDay}')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('7日連続達成'), findsOneWidget);
+  });
+
+  testWidgets('閾値に満たないドットタップではマイルストーンメッセージが表示されない', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildApp(habitId));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(ValueKey('dot-${today.epochDay}')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('連続達成'), findsNothing);
+  });
 }
