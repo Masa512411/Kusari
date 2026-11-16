@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kusari/database/database.dart';
+import 'package:kusari/models/date.dart';
 import 'package:kusari/providers/database_provider.dart';
 import 'package:kusari/repositories/habit_repository.dart';
 import 'package:kusari/ui/home/home_screen.dart';
@@ -222,5 +223,73 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('アーカイブ済み'), findsOneWidget);
+  });
+
+  testWidgets('7日連続達成した瞬間にマイルストーンメッセージが表示される', (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    final repository = HabitRepository(db);
+    await repository.addHabit('筋トレ');
+    final habitId = (await repository.getHabits()).single.id;
+
+    final realToday = Date.today();
+    for (var i = 6; i >= 1; i--) {
+      final day = Date(realToday.epochDay - i);
+      await repository.toggleCompletion(habitId, day, day.next);
+    }
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('タップして完了'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('7日連続達成'), findsOneWidget);
+  });
+
+  testWidgets('閾値に満たない場合はマイルストーンメッセージが表示されない', (tester) async {
+    await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '筋トレ');
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('タップして完了'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('連続達成'), findsNothing);
+  });
+
+  testWidgets('達成の取り消しではマイルストーンメッセージが表示されない', (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    final repository = HabitRepository(db);
+    await repository.addHabit('筋トレ');
+    final habitId = (await repository.getHabits()).single.id;
+
+    final realToday = Date.today();
+    for (var i = 6; i >= 0; i--) {
+      final day = Date(realToday.epochDay - i);
+      await repository.toggleCompletion(habitId, day, day.next);
+    }
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('達成済み'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('連続達成'), findsNothing);
   });
 }
